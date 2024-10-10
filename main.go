@@ -13,6 +13,8 @@ import (
 
 var (
 	yoshinoBot *discordgo.Session
+	token      string
+	appId      string
 	err        error
 )
 
@@ -21,7 +23,8 @@ func main() {
 	if err != nil {
 		log.Fatal("[ERROR]: ", err)
 	}
-	token := os.Getenv("DISCORD_BOT_TOKEN")
+	token = os.Getenv("DISCORD_BOT_TOKEN")
+	appId = os.Getenv("DISCORD_Application_ID")
 
 	yoshinoBot, err = discordgo.New("Bot " + token)
 	if err != nil {
@@ -57,11 +60,16 @@ func guildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 }
 
 func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	log.Printf("Command Data: %+v\n", i.ApplicationCommandData())
 	switch i.ApplicationCommandData().Name {
 	case "ping":
 		delay := yoshinoBot.HeartbeatLatency()
 		go commands.Ping(s, i, delay)
 	case "guild":
 		go commands.Guild(s, i)
+	case "index":
+		go commands.Index(s, i, appId)
+	case "searchgalgame":
+		go commands.SearchGalgame(s, i, i.ApplicationCommandData().Options[0].StringValue())
 	}
 }
