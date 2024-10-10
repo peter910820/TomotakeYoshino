@@ -60,7 +60,7 @@ func guildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 }
 
 func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	log.Printf("Command Data: %+v\n", i.ApplicationCommandData())
+	log.Printf("InteractionCommand: %+v\n", i.ApplicationCommandData())
 	switch i.ApplicationCommandData().Name {
 	case "ping":
 		delay := yoshinoBot.HeartbeatLatency()

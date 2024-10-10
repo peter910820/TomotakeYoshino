@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/gocolly/colly/v2"
 )
 
 func Ping(s *discordgo.Session, i *discordgo.InteractionCreate, delay time.Duration) {
@@ -49,5 +50,24 @@ func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
 }
 
 func SearchGalgame(s *discordgo.Session, i *discordgo.InteractionCreate, galgame string) {
-
+	c := colly.NewCollector()
+	postingData := map[string]string{
+		"mod":          "curforum",
+		"formhash":     "",
+		"srchtype":     "title",
+		"srchfrom":     "0",
+		"cid":          "",
+		"srhfid":       "",
+		"srhlocality":  "forum::forumdisplay",
+		"srchtxt":      "",
+		"searchsubmit": "",
+	}
+	c.OnHTML(`input[type="hidden"]`, func(e *colly.HTMLElement) {
+		name := e.Attr("name")
+		_, ok := postingData[name]
+		if ok {
+			fmt.Println(name)
+		}
+	})
+	c.Visit("https://www.eyny.com/forum-3691-1.html")
 }
