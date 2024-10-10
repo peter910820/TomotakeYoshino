@@ -1,11 +1,10 @@
 package main
 
 import (
+	"TomotakeYoshino/commands"
 	"log"
 	"os"
 	"os/signal"
-
-	"TomotakeYoshino/commands"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
@@ -69,7 +68,13 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		go commands.Guild(s, i)
 	case "index":
 		go commands.Index(s, i, appId)
-	case "searchgalgame":
-		go commands.SearchGalgame(s, i, i.ApplicationCommandData().Options[0].StringValue())
+	case "gnncrawler":
+		var amount int64
+		if len(i.ApplicationCommandData().Options) == 0 {
+			amount = 10
+		} else {
+			amount = i.ApplicationCommandData().Options[0].IntValue()
+		}
+		go commands.GnnCrawler(s, i, amount)
 	}
 }

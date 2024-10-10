@@ -49,25 +49,32 @@ func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
 	})
 }
 
-func SearchGalgame(s *discordgo.Session, i *discordgo.InteractionCreate, galgame string) {
-	c := colly.NewCollector()
-	postingData := map[string]string{
-		"mod":          "curforum",
-		"formhash":     "",
-		"srchtype":     "title",
-		"srchfrom":     "0",
-		"cid":          "",
-		"srhfid":       "",
-		"srhlocality":  "forum::forumdisplay",
-		"srchtxt":      "",
-		"searchsubmit": "",
+func GnnCrawler(s *discordgo.Session, i *discordgo.InteractionCreate, amount int64) {
+	if amount > 20 {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: fmt.Sprintln("資料筆數太大, 請輸入20以下的數字!"),
+			},
+		})
+		return
 	}
-	c.OnHTML(`input[type="hidden"]`, func(e *colly.HTMLElement) {
-		name := e.Attr("name")
-		_, ok := postingData[name]
-		if ok {
-			fmt.Println(name)
+	resultData := "巴哈新聞:\n"
+	c := colly.NewCollector()
+	c.OnHTML(`h1.GN-lbox2D > a`, func(e *colly.HTMLElement) {
+		if amount > 0 {
+			resultData += fmt.Sprintf("* %s: https://%s\n", e.Text, e.Attr("href"))
+			amount--
 		}
 	})
-	c.Visit("https://www.eyny.com/forum-3691-1.html")
+	err := c.Visit("https://gnn.gamer.com.tw/")
+	if err != nil {
+		log.Println("[ERROR]: ", err)
+	}
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: fmt.Sprintln("```", resultData, "```"),
+		},
+	})
 }

@@ -21,14 +21,14 @@ func BasicCommand(s *discordgo.Session) {
 			Description: "get all command",
 		},
 		{
-			Name:        "searchgalgame",
-			Description: "在eyny-GalGame遊戲下載區(上傳空間)搜尋該galgame有無資料",
+			Name:        "gnncrawler",
+			Description: "get gnn news",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "galgame",
-					Description: "a galgame to search",
-					Required:    true,
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "amount",
+					Description: "a number of queries, less than 20",
+					Required:    false,
 				},
 			},
 		},
