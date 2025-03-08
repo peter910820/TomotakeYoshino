@@ -69,12 +69,6 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case "index":
 		go commands.Index(s, i, appId)
 	case "gnncrawler":
-		var amount int64
-		if len(i.ApplicationCommandData().Options) == 0 {
-			amount = 10
-		} else {
-			amount = i.ApplicationCommandData().Options[0].IntValue()
-		}
-		go commands.GnnCrawler(s, i, amount)
+		go commands.GnnCrawler(s, i)
 	}
 }

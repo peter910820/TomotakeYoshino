@@ -23,14 +23,6 @@ func BasicCommand(s *discordgo.Session) {
 		{
 			Name:        "gnncrawler",
 			Description: "get gnn news",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionInteger,
-					Name:        "amount",
-					Description: "a number of queries, less than 20",
-					Required:    false,
-				},
-			},
 		},
 	}
 	for _, cmd := range commands {
