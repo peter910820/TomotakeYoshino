@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -32,7 +31,7 @@ func Guild(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
 	commands, err := s.ApplicationCommands(appId, "")
 	if err != nil {
-		log.Println("[ERROR]: ", err)
+		logrus.Error("[ERROR]: ", err)
 		return
 	}
 	resultData := "ALL commands:\n"

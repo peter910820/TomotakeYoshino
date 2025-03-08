@@ -1,9 +1,8 @@
 package commands
 
 import (
-	"log"
-
 	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
 )
 
 func BasicCommand(s *discordgo.Session) {
@@ -28,8 +27,8 @@ func BasicCommand(s *discordgo.Session) {
 	for _, cmd := range commands {
 		_, err := s.ApplicationCommandCreate(s.State.User.ID, "", cmd)
 		if err != nil {
-			log.Println("[ERROR]: ", err)
-			log.Println("Register slash command faild!")
+			logrus.Error("[ERROR]: ", err)
+			logrus.Error("Register slash command faild!")
 			return
 		}
 	}
