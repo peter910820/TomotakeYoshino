@@ -12,39 +12,42 @@ import (
 )
 
 var (
-	yoshinoBot *discordgo.Session
-	token      string
-	appId      string
-	err        error
+	appId string
 )
 
-func main() {
+func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	appId = os.Getenv("APP_ID")
+	if appId == "" {
+		logrus.Fatal("appId not set")
+	}
+
 	// logrus settings
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors:   true,
 		FullTimestamp: true,
 	})
 	logrus.SetLevel(logrus.DebugLevel)
+}
 
-	err = godotenv.Load(".env")
+func main() {
+	token := os.Getenv("TOKEN")
+	yoshinoBot, err := discordgo.New("Bot " + token)
 	if err != nil {
-		logrus.Fatal("[ERROR]: ", err)
-	}
-	token = os.Getenv("DISCORD_BOT_TOKEN")
-	appId = os.Getenv("DISCORD_Application_ID")
-
-	yoshinoBot, err = discordgo.New("Bot " + token)
-	if err != nil {
-		logrus.Fatal("[ERROR]: ", err)
+		logrus.Fatal(err)
 	}
 
+	// add handler
 	yoshinoBot.AddHandler(ready)
 	yoshinoBot.AddHandler(guildMemberAdd)
 	yoshinoBot.AddHandler(onInteraction)
 
 	err = yoshinoBot.Open() // websocket connect
 	if err != nil {
-		logrus.Fatal("[ERROR]: ", err)
+		logrus.Fatal(err)
 	}
 
 	logrus.Info("YoshinoBot is now running. Press CTRL+C to exit.")
@@ -70,7 +73,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logrus.Infof("InteractionCommand: %+v\n", i.ApplicationCommandData())
 	switch i.ApplicationCommandData().Name {
 	case "ping":
-		delay := yoshinoBot.HeartbeatLatency()
+		delay := s.HeartbeatLatency()
 		go bot.Ping(s, i, delay)
 	case "guild":
 		go bot.Guild(s, i)
@@ -78,5 +81,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		go bot.Index(s, i, appId)
 	case "gnncrawler":
 		go bot.GnnCrawler(s, i)
+	case "vndbsearch":
+		go bot.VndbSearch(s, i)
 	}
 }
