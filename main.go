@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"TomotakeYoshino/bot"
+	"TomotakeYoshino/cmds"
+	"TomotakeYoshino/utils"
 )
 
 var (
@@ -73,8 +75,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logrus.Infof("InteractionCommand: %+v\n", i.ApplicationCommandData())
 	switch i.ApplicationCommandData().Name {
 	case "ping":
-		delay := s.HeartbeatLatency()
-		go bot.Ping(s, i, delay)
+		go bot.Ping(s, i, s.HeartbeatLatency())
 	case "guild":
 		go bot.Guild(s, i)
 	case "index":
@@ -82,6 +83,11 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case "gnncrawler":
 		go bot.GnnCrawler(s, i)
 	case "vndbsearch":
-		go bot.VndbSearch(s, i)
+		value, err := utils.GetOptions(i, "brand")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		go cmds.VndbSearch(s, i, value)
 	}
 }

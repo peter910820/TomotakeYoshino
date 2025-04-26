@@ -84,7 +84,3 @@ func GnnCrawler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 }
-
-func VndbSearch(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
-}
