@@ -31,7 +31,7 @@ func Guild(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
 	commands, err := s.ApplicationCommands(appId, "")
 	if err != nil {
-		logrus.Error("[ERROR]: ", err)
+		logrus.Error(err)
 		return
 	}
 	resultData := "ALL commands:\n"

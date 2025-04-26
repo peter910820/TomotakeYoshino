@@ -26,6 +26,14 @@ func BasicCommand(s *discordgo.Session) {
 		{
 			Name:        "vndbsearch",
 			Description: "search galgame data for vndb",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "brand",
+					Description: "搜尋的品牌名稱",
+					Required:    true,
+				},
+			},
 		},
 	}
 	for _, cmd := range commands {
