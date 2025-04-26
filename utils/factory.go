@@ -1,5 +1,15 @@
 package utils
 
+// create struct to use brand name to search producer id for vndb
+func VndbProducerRequest(brand string) map[string]interface{} {
+	return map[string]interface{}{
+		"filters": []string{
+			"search", "=", brand,
+		},
+		"fields": "id, name",
+	}
+}
+
 func VndbRequestData(brand string) map[string]interface{} {
 	return map[string]interface{}{
 		"filters": []interface{}{
@@ -9,6 +19,7 @@ func VndbRequestData(brand string) map[string]interface{} {
 				"search", "=", brand,
 			},
 		},
-		"fields": "title, alttitle, rating, image.url",
+		"results": 100,
+		"fields":  "title, alttitle, rating, image.url",
 	}
 }

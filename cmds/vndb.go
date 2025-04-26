@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
@@ -26,6 +27,41 @@ func VndbSearch(s *discordgo.Session, i *discordgo.InteractionCreate, brand stri
 		return
 	}
 
-	logrus.Println("狀態碼：", resp.StatusCode)
-	logrus.Println("回傳內容：", string(body))
+	if resp.StatusCode != 200 {
+		logrus.Errorf("the server returned an error status code %d", resp.StatusCode)
+		utils.SlashCommandError(s, i, fmt.Sprintf("the server returned an error status code %d", resp.StatusCode))
+		return
+	}
+
+	logrus.Infof("狀態碼: %d", resp.StatusCode)
+	logrus.Infof("回傳內容: \n%s", string(body))
+
+	vndbResponse(body)
+
+	embed := &discordgo.MessageEmbed{
+		Title: "Vndb查詢結果",
+		Color: 0x04108e,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   "訊息內容",
+				Value:  string(body),
+				Inline: false,
+			},
+		},
+	}
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{embed},
+		},
+	})
+}
+
+func vndbResponse(body []byte) {
+	var result map[string]interface{} // 如果你懶得先定義結構
+
+	err := json.Unmarshal(body, &result)
+	if err != nil {
+		panic(err)
+	}
 }
