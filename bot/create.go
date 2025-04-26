@@ -1,4 +1,4 @@
-package commands
+package bot
 
 import (
 	"github.com/bwmarrin/discordgo"
@@ -23,12 +23,15 @@ func BasicCommand(s *discordgo.Session) {
 			Name:        "gnncrawler",
 			Description: "get gnn news",
 		},
+		{
+			Name:        "vndbsearch",
+			Description: "search galgame data for vndb",
+		},
 	}
 	for _, cmd := range commands {
 		_, err := s.ApplicationCommandCreate(s.State.User.ID, "", cmd)
 		if err != nil {
-			logrus.Error("[ERROR]: ", err)
-			logrus.Error("Register slash command faild!")
+			logrus.Errorf("Register slash command faild: %s", err)
 			return
 		}
 	}

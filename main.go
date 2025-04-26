@@ -1,13 +1,14 @@
 package main
 
 import (
-	"TomotakeYoshino/commands"
 	"os"
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
+
+	"TomotakeYoshino/bot"
 )
 
 var (
@@ -57,7 +58,7 @@ func main() {
 
 func ready(s *discordgo.Session, m *discordgo.Ready) {
 	s.UpdateGameStatus(0, "クナド国記")
-	commands.BasicCommand(s)
+	bot.BasicCommand(s)
 }
 
 func guildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
@@ -70,12 +71,12 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	switch i.ApplicationCommandData().Name {
 	case "ping":
 		delay := yoshinoBot.HeartbeatLatency()
-		go commands.Ping(s, i, delay)
+		go bot.Ping(s, i, delay)
 	case "guild":
-		go commands.Guild(s, i)
+		go bot.Guild(s, i)
 	case "index":
-		go commands.Index(s, i, appId)
+		go bot.Index(s, i, appId)
 	case "gnncrawler":
-		go commands.GnnCrawler(s, i)
+		go bot.GnnCrawler(s, i)
 	}
 }
