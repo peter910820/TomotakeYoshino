@@ -24,13 +24,25 @@ func RegisterCommand(s *discordgo.Session) {
 			Description: "get gnn news",
 		},
 		{
-			Name:        "vndbsearch",
-			Description: "search galgame data for vndb",
+			Name:        "vndbsearchbrand",
+			Description: "search galgame brand data for vndb",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "brand",
 					Description: "搜尋的品牌名稱",
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:        "vndbsearch",
+			Description: "use vndb barnd id search galgame data for vndb",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "brandid",
+					Description: "搜尋的品牌ID",
 					Required:    true,
 				},
 			},

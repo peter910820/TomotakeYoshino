@@ -25,6 +25,7 @@ func GetOptions(i *discordgo.InteractionCreate, name string) (string, error) {
 	return "", errors.New("option not found")
 }
 
+// use json data to post request to specific url
 func JsonRequest(url string, method string, data []byte) (*http.Response, []byte, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
@@ -49,6 +50,7 @@ func JsonRequest(url string, method string, data []byte) (*http.Response, []byte
 	return resp, body, nil
 }
 
+// handle slash command error return
 func SlashCommandError(s *discordgo.Session, i *discordgo.InteractionCreate, err string) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

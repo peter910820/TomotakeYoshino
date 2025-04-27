@@ -72,8 +72,15 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		go cmds.Index(s, i, appId)
 	case "gnncrawler":
 		go cmds.GnnCrawler(s, i)
-	case "vndbsearch":
+	case "vndbsearchbrand":
 		value, err := utils.GetOptions(i, "brand")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		go cmds.VndbSearchProducer(s, i, value)
+	case "vndbsearch":
+		value, err := utils.GetOptions(i, "brandid")
 		if err != nil {
 			logrus.Error(err)
 			return
