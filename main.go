@@ -85,6 +85,6 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			logrus.Error(err)
 			return
 		}
-		go cmds.VndbSearch(s, i, value)
+		go cmds.VndbSearchVn(s, i, value)
 	}
 }

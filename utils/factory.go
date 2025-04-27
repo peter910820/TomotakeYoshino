@@ -6,17 +6,18 @@ func VndbProducerRequest(brand string) map[string]interface{} {
 		"filters": []string{
 			"search", "=", brand,
 		},
-		"fields": "id, name",
+		"results": 100,
+		"fields":  "id, name",
 	}
 }
 
-func VndbRequestData(brand string) map[string]interface{} {
+func VndbVnRequest(brandId string) map[string]interface{} {
 	return map[string]interface{}{
 		"filters": []interface{}{
 			"developer",
 			"=",
 			[]string{
-				"search", "=", brand,
+				"search", "=", brandId,
 			},
 		},
 		"results": 100,
