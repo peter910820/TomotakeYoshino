@@ -43,8 +43,8 @@ func main() {
 	}
 
 	// add handler
-	yoshinoBot.AddHandler(ready)
-	yoshinoBot.AddHandler(guildMemberAdd)
+	yoshinoBot.AddHandler(bot.Ready)
+	yoshinoBot.AddHandler(bot.GuildMemberAdd)
 	yoshinoBot.AddHandler(onInteraction)
 
 	err = yoshinoBot.Open() // websocket connect
@@ -61,27 +61,17 @@ func main() {
 	logrus.Debug(interruptSignal)
 }
 
-func ready(s *discordgo.Session, m *discordgo.Ready) {
-	s.UpdateGameStatus(0, "クナド国記")
-	bot.BasicCommand(s)
-}
-
-func guildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
-	welcomeMessage := "Welcome " + m.User.Username + "!"
-	s.ChannelMessageSend(m.GuildID, welcomeMessage)
-}
-
 func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logrus.Infof("InteractionCommand: %+v\n", i.ApplicationCommandData())
 	switch i.ApplicationCommandData().Name {
 	case "ping":
-		go bot.Ping(s, i, s.HeartbeatLatency())
+		go cmds.Ping(s, i, s.HeartbeatLatency())
 	case "guild":
-		go bot.Guild(s, i)
+		go cmds.Guild(s, i)
 	case "index":
-		go bot.Index(s, i, appId)
+		go cmds.Index(s, i, appId)
 	case "gnncrawler":
-		go bot.GnnCrawler(s, i)
+		go cmds.GnnCrawler(s, i)
 	case "vndbsearch":
 		value, err := utils.GetOptions(i, "brand")
 		if err != nil {
