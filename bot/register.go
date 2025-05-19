@@ -47,6 +47,10 @@ func RegisterCommand(s *discordgo.Session) {
 				},
 			},
 		},
+		{
+			Name:        "shogistart",
+			Description: "開始一場將棋對弈",
+		},
 	}
 	for _, cmd := range commands {
 		_, err := s.ApplicationCommandCreate(s.State.User.ID, "", cmd)

@@ -89,5 +89,13 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 		go cmds.VndbSearchVn(s, i, value)
+	case "shogistart":
+		go cmds.ShogiStart(s, i, &shogi)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "正在開始創建對局，請稍後",
+			},
+		})
 	}
 }
