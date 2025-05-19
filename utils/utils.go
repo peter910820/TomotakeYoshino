@@ -25,6 +25,17 @@ func GetOptions(i *discordgo.InteractionCreate, name string) (string, error) {
 	return "", errors.New("option not found")
 }
 
+func GetUserID(i *discordgo.InteractionCreate) (string, error) {
+	if i.Member != nil {
+		return i.Member.User.ID, nil
+	} else if i.User != nil {
+		return i.User.ID, nil
+	} else {
+		logrus.Error("cannot found user id")
+		return "", errors.New("cannot found user id")
+	}
+}
+
 // use json data to post request to specific url
 func JsonRequest(url string, method string, data []byte) (*http.Response, []byte, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))

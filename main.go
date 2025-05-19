@@ -90,7 +90,12 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 		go cmds.VndbSearchVn(s, i, value)
 	case "shogistart":
-		go cmds.ShogiStart(s, i, &shogi)
+		value, err := utils.GetOptions(i, "opponent")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		go cmds.ShogiStart(s, i, &shogi, value)
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{

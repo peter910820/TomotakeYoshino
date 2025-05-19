@@ -50,6 +50,14 @@ func RegisterCommand(s *discordgo.Session) {
 		{
 			Name:        "shogistart",
 			Description: "開始一場將棋對弈",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "opponent",
+					Description: "要對弈的對手ID",
+					Required:    true,
+				},
+			},
 		},
 	}
 	for _, cmd := range commands {
