@@ -10,11 +10,14 @@ import (
 
 	"TomotakeYoshino/bot"
 	"TomotakeYoshino/cmds"
+	"TomotakeYoshino/model"
 	"TomotakeYoshino/utils"
 )
 
 var (
 	appId string
+
+	shogi map[string]model.Match
 )
 
 func init() {
