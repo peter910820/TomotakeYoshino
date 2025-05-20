@@ -11,7 +11,7 @@ type Match struct {
 	FirstPlayerPieces  map[string]Position
 	SecondPlayerPieces map[string]Position
 	TurnID             bool
-	Board              [][]string // 詳細描述盤面狀態，每次更新時只需更新移動的棋子的目標跟原位子兩個點就好
+	Board              [10][10]string // 詳細描述盤面狀態，每次更新時只需更新移動的棋子的目標跟原位子兩個點就好
 }
 
 // 每一顆棋子

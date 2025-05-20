@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map[string]model.Match, opponent string) {
+func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map[string]*model.Match, opponent string) {
 	channel, err := s.Channel(i.ChannelID)
 	if err != nil {
 		logrus.Error(err)
@@ -21,7 +21,7 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 		return
 	}
 
-	(*shogi)[channel.ID] = model.Match{
+	(*shogi)[channel.ID] = &model.Match{
 		FirstPlayerID:  userID,
 		SecondPlayerID: opponent,
 	}
