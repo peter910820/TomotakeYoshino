@@ -17,7 +17,7 @@ import (
 var (
 	appId string
 
-	shogi map[string]*model.Match
+	shogi map[string]*model.Match = make(map[string]*model.Match)
 )
 
 func init() {

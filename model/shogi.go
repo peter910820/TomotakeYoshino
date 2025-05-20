@@ -10,7 +10,7 @@ type Match struct {
 	SecondPlayerName   string
 	FirstPlayerPieces  map[string]Position
 	SecondPlayerPieces map[string]Position
-	TurnID             bool
+	Turn               bool
 	Board              [10][10]string // 詳細描述盤面狀態，每次更新時只需更新移動的棋子的目標跟原位子兩個點就好
 }
 
