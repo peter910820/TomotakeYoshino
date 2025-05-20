@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -25,6 +26,7 @@ func GetOptions(i *discordgo.InteractionCreate, name string) (string, error) {
 	return "", errors.New("option not found")
 }
 
+// use interactionCreate to get user id
 func GetUserID(i *discordgo.InteractionCreate) (string, error) {
 	if i.Member != nil {
 		return i.Member.User.ID, nil
@@ -34,6 +36,15 @@ func GetUserID(i *discordgo.InteractionCreate) (string, error) {
 		logrus.Error("cannot found user id")
 		return "", errors.New("cannot found user id")
 	}
+}
+
+// use user id and session to get user name
+func GetUserName(s *discordgo.Session, userID string) (string, error) {
+	user, err := s.User(userID)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s#%s", user.Username, user.Discriminator), nil
 }
 
 // use json data to post request to specific url
