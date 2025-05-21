@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"TomotakeYoshino/utils"
 	"fmt"
 	"time"
 
@@ -9,21 +10,11 @@ import (
 )
 
 func Ping(s *discordgo.Session, i *discordgo.InteractionCreate, delay time.Duration) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf("Delay: %v", delay),
-		},
-	})
+	utils.SlashCommandRespond(s, i, fmt.Sprintf("Delay: %v", delay))
 }
 
 func Guild(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "guildID: " + i.GuildID,
-		},
-	})
+	utils.SlashCommandRespond(s, i, "guildID: "+i.GuildID)
 }
 
 func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
@@ -40,10 +31,5 @@ func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
 			resultData += fmt.Sprintf("%s: %s 必選: %t\n", option.Name, option.Description, option.Required)
 		}
 	}
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintln("```", resultData, "```"),
-		},
-	})
+	utils.SlashCommandRespond(s, i, fmt.Sprintln("```", resultData, "```"))
 }

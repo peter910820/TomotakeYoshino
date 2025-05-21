@@ -104,20 +104,10 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		_, ok := shogi[channel.ID]
 		if ok {
 			logrus.Error("該頻道已有未結束的對局")
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "該頻道已有未結束的對局",
-				},
-			})
+			utils.SlashCommandRespond(s, i, "該頻道已有未結束的對局")
 			return
 		}
 		go cmds.ShogiStart(s, i, &shogi, value)
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "正在開始創建對局，請稍後",
-			},
-		})
+		utils.SlashCommandRespond(s, i, "正在開始創建對局，請稍後")
 	}
 }
