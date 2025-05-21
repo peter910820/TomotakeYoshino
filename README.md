@@ -16,4 +16,4 @@
 
 `vndbsearch`: 用指定的vndb brandid查找該品牌的全部作品平均評分  
 
-'shogistart': 在指定頻道開啟將棋對弈 **目前施工中**  
+`shogistart`: 在指定頻道開啟將棋對弈 **目前施工中**  
