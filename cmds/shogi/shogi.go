@@ -161,35 +161,35 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 	// 1.處理棋子座標
 
 	// 先處理沒有輔助字的狀況
+	// 轉換座標資料格式
 	pos, err := translateToPosition(position)
 	if err != nil {
 		logrus.Error(err)
+		utils.SlashCommandError(s, i, err.Error())
 		return
 	}
 
 	err = judgeMove(pos, position[2:3], match)
 	if err != nil {
 		logrus.Error(err)
+		utils.SlashCommandError(s, i, err.Error())
 		return
 	}
 	// 2.處理盤面座標
 }
 
+// translate command "shogimove" position parameter to model.Position struct
 func translateToPosition(position string) (*model.Position, error) {
 	var pos model.Position
 	var err error
-	//translate to model.Position
 	pos.X, err = strconv.Atoi(position[:1])
 	if err != nil {
-		fmt.Println("translate position failed: ", err)
 		return &pos, err
 	}
 	pos.Y, err = strconv.Atoi(position[1:2])
 	if err != nil {
-		fmt.Println("translate position failed: ", err)
 		return &pos, err
 	}
-
 	return &pos, nil
 }
 
