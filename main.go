@@ -10,6 +10,7 @@ import (
 
 	"TomotakeYoshino/bot"
 	"TomotakeYoshino/cmds"
+	"TomotakeYoshino/cmds/shogi"
 	"TomotakeYoshino/model"
 	"TomotakeYoshino/utils"
 )
@@ -17,7 +18,7 @@ import (
 var (
 	appId string
 
-	shogi map[string]*model.Match = make(map[string]*model.Match)
+	shogiMatch map[string]*model.Match = make(map[string]*model.Match)
 )
 
 func init() {
@@ -101,14 +102,14 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			logrus.Error(err)
 			return
 		}
-		_, ok := shogi[channel.ID]
+		_, ok := shogiMatch[channel.ID]
 		if ok {
 			logrus.Error("該頻道已有未結束的對局")
 			utils.SlashCommandRespond(s, i, "該頻道已有未結束的對局")
 			return
 		}
 		// start a shogi match
-		go cmds.ShogiStart(s, i, &shogi, value)
+		go shogi.ShogiStart(s, i, &shogiMatch, value)
 		utils.SlashCommandRespond(s, i, "正在開始創建對局，請稍後")
 	case "shogimove":
 		behavior, err := utils.GetOptions(i, "behavior")
@@ -128,7 +129,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 		if behavior == "move" {
-			go cmds.ShogiMove(s, i, shogi[channel.ID], position)
+			go shogi.ShogiMove(s, i, shogiMatch[channel.ID], position)
 		} else {
 
 		}

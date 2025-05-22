@@ -1,4 +1,4 @@
-package cmds
+package shogi
 
 import (
 	"TomotakeYoshino/model"
@@ -241,22 +241,6 @@ func piecesRules(pieceName string) func(model.Position, model.Position, bool) bo
 		return keimaRule
 	}
 	return keimaRule
-}
-
-func keimaRule(piecePos model.Position, targetPos model.Position, turn bool) bool {
-	if turn {
-		if (utils.Abs(targetPos.X-piecePos.X) == 1) && (piecePos.Y-targetPos.Y == 2) {
-			return true
-		} else {
-			return false
-		}
-	} else {
-		if (utils.Abs(targetPos.X-piecePos.X) == 1) && (targetPos.Y-piecePos.Y == 2) {
-			return true
-		} else {
-			return false
-		}
-	}
 }
 
 // 之後要寫指令調用棋子狀態做為測試
