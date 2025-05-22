@@ -181,7 +181,7 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 
 	var buf bytes.Buffer
 	buf.WriteString("```")
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		for j := 10 - 1; j >= 0; j-- {
 			buf.WriteString(match.Board[i][j])
 		}
@@ -251,6 +251,13 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 	match.FirstPlayerPieces[finallyMovePiece] = *pos
 
 	// 這邊還要去撈目標位置是否有敵方棋子，有的話刪除他並加到自己的capture陣列中
+	for k, v := range match.SecondPlayerPieces {
+		if v == *pos {
+			match.FirstPlayerCapture = append(match.FirstPlayerCapture, k)
+			delete(match.SecondPlayerPieces, k)
+			break
+		}
+	}
 
 	return piecePos, nil
 }

@@ -4,15 +4,17 @@ package model
 
 // 每一場對局
 type Match struct {
-	ChannleID          string
-	FirstPlayerID      string
-	FirstPlayerName    string
-	SecondPlayerID     string
-	SecondPlayerName   string
-	FirstPlayerPieces  map[string]Position
-	SecondPlayerPieces map[string]Position
-	Turn               bool
-	Board              [10][10]string // 詳細描述盤面狀態，每次更新時只需更新移動的棋子的目標跟原位子兩個點就好
+	ChannleID           string
+	FirstPlayerID       string
+	FirstPlayerName     string
+	SecondPlayerID      string
+	SecondPlayerName    string
+	FirstPlayerPieces   map[string]Position
+	SecondPlayerPieces  map[string]Position
+	FirstPlayerCapture  []string
+	SecondPlayerCapture []string
+	Turn                bool
+	Board               [10][10]string // 詳細描述盤面狀態，每次更新時只需更新移動的棋子的目標跟原位子兩個點就好
 }
 
 // 每一顆棋子
