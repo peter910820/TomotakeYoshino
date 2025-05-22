@@ -43,6 +43,7 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 	}
 
 	(*shogi)[channel.ID] = &model.Match{
+		ChannleID:        channel.ID,
 		FirstPlayerID:    userID,
 		FirstPlayerName:  userName,
 		SecondPlayerID:   opponent,
@@ -66,8 +67,8 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 
 	var buf bytes.Buffer
 	buf.WriteString("```")
-	for i := range len((*shogi)[channel.ID].Board) {
-		for j := len((*shogi)[channel.ID].Board) - 1; j >= 0; j-- {
+	for i := 0; i < 10; i++ {
+		for j := 10 - 1; j >= 0; j-- {
 			buf.WriteString((*shogi)[channel.ID].Board[i][j])
 		}
 		buf.WriteString("\n")
@@ -169,13 +170,30 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 		return
 	}
 
-	err = judgeMove(pos, position[2:3], match)
+	piecePos, err := judgeMove(pos, position[2:3], match)
 	if err != nil {
 		logrus.Error(err)
 		utils.SlashCommandError(s, i, err.Error())
 		return
 	}
 	// 2.處理盤面座標
+	refreshBoard(*pos, piecePos, position[2:3], match)
+
+	var buf bytes.Buffer
+	buf.WriteString("```")
+	for i := 0; i < 10; i++ {
+		for j := 10 - 1; j >= 0; j-- {
+			buf.WriteString(match.Board[i][j])
+		}
+		buf.WriteString("\n")
+	}
+	buf.WriteString("```")
+
+	_, err = s.ChannelMessageSend(match.ChannleID, buf.String())
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
 }
 
 // translate command "shogimove" position parameter to model.Position struct
@@ -194,13 +212,14 @@ func translateToPosition(position string) (*model.Position, error) {
 }
 
 // handle move
-func judgeMove(pos *model.Position, pieceName string, match *model.Match) error {
+func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model.Position, error) {
+	var piecePos model.Position
 	matchPieces := []string{}
 	if match.Turn {
 		for k, v := range match.FirstPlayerPieces {
 			// 排除目標位置有自己的棋子的狀況
 			if v == *pos {
-				return errors.New("目標位置上有自己的棋子")
+				return piecePos, errors.New("目標位置上有自己的棋子")
 			}
 			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
 				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
@@ -210,7 +229,7 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) error 
 		for k, v := range match.SecondPlayerPieces {
 			// 排除目標位置有自己的棋子的狀況
 			if v == *pos {
-				return errors.New("目標位置上有自己的棋子")
+				return piecePos, errors.New("目標位置上有自己的棋子")
 			}
 			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
 				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
@@ -223,8 +242,9 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) error 
 		judgeFunc := piecesRules(v)
 		if judgeFunc(match.FirstPlayerPieces[v], *pos, match.Turn) {
 			if finallyMovePiece != "" {
-				return errors.New("模稜兩可的操作")
+				return piecePos, errors.New("模稜兩可的操作")
 			}
+			piecePos = match.FirstPlayerPieces[v]
 			finallyMovePiece = v
 		}
 	}
@@ -232,7 +252,7 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) error 
 
 	// 這邊還要去撈目標位置是否有敵方棋子，有的話刪除他並加到自己的capture陣列中
 
-	return nil
+	return piecePos, nil
 }
 
 func piecesRules(pieceName string) func(model.Position, model.Position, bool) bool {
@@ -241,6 +261,12 @@ func piecesRules(pieceName string) func(model.Position, model.Position, bool) bo
 		return keimaRule
 	}
 	return keimaRule
+}
+
+// refresh match board status
+func refreshBoard(piecePos model.Position, targetPos model.Position, pieceName string, match *model.Match) {
+	match.Board[piecePos.X][piecePos.Y] = "＿"
+	match.Board[targetPos.X][targetPos.Y] = pieceName
 }
 
 // 之後要寫指令調用棋子狀態做為測試

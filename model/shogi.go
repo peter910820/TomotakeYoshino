@@ -4,6 +4,7 @@ package model
 
 // 每一場對局
 type Match struct {
+	ChannleID          string
 	FirstPlayerID      string
 	FirstPlayerName    string
 	SecondPlayerID     string
