@@ -4,12 +4,20 @@ import (
 	"TomotakeYoshino/model"
 	"TomotakeYoshino/utils"
 	"bytes"
+	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	CorrespondMap map[string]string = map[string]string{"桂": "keima"}
+)
+
+// start a shogi match
 func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map[string]*model.Match, opponent string) {
 	channel, err := s.Channel(i.ChannelID)
 	if err != nil {
@@ -140,3 +148,115 @@ func InitBoard(match *model.Match) {
 		match.Board[7][i] = pieces4[i-1]
 	}
 }
+
+// 輔助字有兩種 一種是標示位置的輔助字(上下左右) 一種是升變(成)
+func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *model.Match, position string) {
+	// support word
+	_ = ""
+	if len(position) > 3 {
+		// 有輔助字的狀況
+		_ = position[3:len(position)]
+	}
+
+	// 1.處理棋子座標
+
+	// 先處理沒有輔助字的狀況
+	pos, err := translateToPosition(position)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	err = judgeMove(pos, position[2:3], match)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	// 2.處理盤面座標
+}
+
+func translateToPosition(position string) (*model.Position, error) {
+	var pos model.Position
+	var err error
+	//translate to model.Position
+	pos.X, err = strconv.Atoi(position[:1])
+	if err != nil {
+		fmt.Println("translate position failed: ", err)
+		return &pos, err
+	}
+	pos.Y, err = strconv.Atoi(position[1:2])
+	if err != nil {
+		fmt.Println("translate position failed: ", err)
+		return &pos, err
+	}
+
+	return &pos, nil
+}
+
+// handle move
+func judgeMove(pos *model.Position, pieceName string, match *model.Match) error {
+	matchPieces := []string{}
+	if match.Turn {
+		for k, v := range match.FirstPlayerPieces {
+			// 排除目標位置有自己的棋子的狀況
+			if v == *pos {
+				return errors.New("目標位置上有自己的棋子")
+			}
+			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
+				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
+			}
+		}
+	} else {
+		for k, v := range match.SecondPlayerPieces {
+			// 排除目標位置有自己的棋子的狀況
+			if v == *pos {
+				return errors.New("目標位置上有自己的棋子")
+			}
+			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
+				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
+			}
+		}
+	}
+	// 目前只有先手的狀況 因為邏輯較為複雜所以之後這段會重構 要代碼複用的代碼複用 要省略的省略
+	var finallyMovePiece string = ""
+	for _, v := range matchPieces {
+		judgeFunc := piecesRules(v)
+		if judgeFunc(match.FirstPlayerPieces[v], *pos, match.Turn) {
+			if finallyMovePiece != "" {
+				return errors.New("模稜兩可的操作")
+			}
+			finallyMovePiece = v
+		}
+	}
+	match.FirstPlayerPieces[finallyMovePiece] = *pos
+
+	// 這邊還要去撈目標位置是否有敵方棋子，有的話刪除他並加到自己的capture陣列中
+
+	return nil
+}
+
+func piecesRules(pieceName string) func(model.Position, model.Position, bool) bool {
+	switch pieceName {
+	case "keima":
+		return keimaRule
+	}
+	return keimaRule
+}
+
+func keimaRule(piecePos model.Position, targetPos model.Position, turn bool) bool {
+	if turn {
+		if (utils.Abs(targetPos.X-piecePos.X) == 1) && (piecePos.Y-targetPos.Y == 2) {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		if (utils.Abs(targetPos.X-piecePos.X) == 1) && (targetPos.Y-piecePos.Y == 2) {
+			return true
+		} else {
+			return false
+		}
+	}
+}
+
+// 之後要寫指令調用棋子狀態做為測試

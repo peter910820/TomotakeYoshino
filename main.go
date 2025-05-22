@@ -95,7 +95,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			logrus.Error(err)
 			return
 		}
-
+		// check if channel has other match
 		channel, err := s.Channel(i.ChannelID)
 		if err != nil {
 			logrus.Error(err)
@@ -107,7 +107,35 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			utils.SlashCommandRespond(s, i, "該頻道已有未結束的對局")
 			return
 		}
+		// start a shogi match
 		go cmds.ShogiStart(s, i, &shogi, value)
 		utils.SlashCommandRespond(s, i, "正在開始創建對局，請稍後")
+	case "shogimove":
+		behavior, err := utils.GetOptions(i, "behavior")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		position, err := utils.GetOptions(i, "position")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		// check if channel has other match
+		channel, err := s.Channel(i.ChannelID)
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		if behavior == "move" {
+			go cmds.ShogiMove(s, i, shogi[channel.ID], position)
+		} else {
+
+		}
+		// value, err := utils.GetOptions(i, "support")
+		// if err != nil {
+		// 	logrus.Error(err)
+		// 	return
+		// }
 	}
 }
