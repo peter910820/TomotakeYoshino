@@ -276,4 +276,25 @@ func refreshBoard(piecePos model.Position, targetPos model.Position, pieceName s
 	match.Board[targetPos.X][targetPos.Y] = pieceName
 }
 
-// 之後要寫指令調用棋子狀態做為測試
+// get the shogi pieces data for test
+func GetShogiPiecesData(s *discordgo.Session, i *discordgo.InteractionCreate, match *model.Match) {
+	var buf bytes.Buffer
+	buf.WriteString("```")
+	buf.WriteString("First Player Pieces:")
+	for k, v := range match.FirstPlayerPieces {
+		buf.WriteString(fmt.Sprintf("%s: {%d %d}", k, v.X, v.Y))
+	}
+	buf.WriteString("Second Player Pieces:")
+	for k, v := range match.SecondPlayerPieces {
+		buf.WriteString(fmt.Sprintf("%s: {%d %d}", k, v.X, v.Y))
+	}
+	buf.WriteString("```")
+
+	_, err := s.ChannelMessageSend(match.ChannleID, buf.String())
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+}
+
+// 以後只會傳match的指標，將選擇match的判斷留給進goruntine之前

@@ -133,6 +133,13 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		} else {
 
 		}
+	case "shogidebug":
+		channelID, err := utils.GetOptions(i, "channleid")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
+		shogi.GetShogiPiecesData(s, i, shogiMatch[channelID])
 		// value, err := utils.GetOptions(i, "support")
 		// if err != nil {
 		// 	logrus.Error(err)
