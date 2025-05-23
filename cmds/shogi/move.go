@@ -21,71 +21,6 @@ var (
 	}
 )
 
-// start a shogi match
-func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map[string]*model.Match, opponent string) {
-	channel, err := s.Channel(i.ChannelID)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	userID, err := utils.GetUserID(i)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	userName, err := utils.GetUserName(s, userID)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	opponentName, err := utils.GetUserName(s, opponent)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	(*shogi)[channel.ID] = &model.Match{
-		ChannleID:        channel.ID,
-		FirstPlayerID:    userID,
-		FirstPlayerName:  userName,
-		SecondPlayerID:   opponent,
-		SecondPlayerName: opponentName,
-		Turn:             true,
-	}
-
-	initPlayerPieces((*shogi)[channel.ID])
-	_, err = s.ChannelMessageSend(channel.ID, "棋子初始化成功，正在初始化盤面狀態")
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	initBoard((*shogi)[channel.ID])
-	_, err = s.ChannelMessageSend(channel.ID, "盤面狀態初始化成功")
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	var buf bytes.Buffer
-	buf.WriteString("```")
-	for i := range 10 {
-		for j := 10 - 1; j >= 0; j-- {
-			buf.WriteString((*shogi)[channel.ID].Board[j][i])
-		}
-		buf.WriteString("\n")
-	}
-	buf.WriteString("```")
-
-	_, err = s.ChannelMessageSend(channel.ID, buf.String())
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-}
-
 // 輔助字有兩種 一種是標示位置的輔助字(上下左右) 一種是升變(成)
 func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *model.Match, position string) {
 	// support word
@@ -214,27 +149,6 @@ func piecesRules(pieceName string, piecePos model.Position, targetPos model.Posi
 func refreshBoard(targetPos model.Position, piecePos model.Position, pieceName string, match *model.Match) {
 	match.Board[piecePos.X][piecePos.Y] = "＿"
 	match.Board[targetPos.X][targetPos.Y] = pieceName
-}
-
-// get the shogi pieces data for test
-func GetShogiPiecesData(s *discordgo.Session, i *discordgo.InteractionCreate, match *model.Match) {
-	var buf bytes.Buffer
-	buf.WriteString("```")
-	buf.WriteString("First Player Pieces:\n")
-	for k, v := range match.FirstPlayerPieces {
-		buf.WriteString(fmt.Sprintf("  %s: {%d %d}\n", k, v.X, v.Y))
-	}
-	buf.WriteString("Second Player Pieces:\n")
-	for k, v := range match.SecondPlayerPieces {
-		buf.WriteString(fmt.Sprintf("  %s: {%d %d}\n", k, v.X, v.Y))
-	}
-	buf.WriteString("```")
-
-	_, err := s.ChannelMessageSend(match.ChannleID, buf.String())
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
 }
 
 // 以後只會傳match的指標，將選擇match的判斷留給進goruntine之前

@@ -1,10 +1,80 @@
 package shogi
 
 import (
+	"bytes"
 	"fmt"
 
+	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
+
 	"TomotakeYoshino/model"
+	"TomotakeYoshino/utils"
 )
+
+// start a shogi match
+func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map[string]*model.Match, opponent string) {
+	channel, err := s.Channel(i.ChannelID)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	userID, err := utils.GetUserID(i)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	userName, err := utils.GetUserName(s, userID)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	opponentName, err := utils.GetUserName(s, opponent)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	(*shogi)[channel.ID] = &model.Match{
+		ChannleID:        channel.ID,
+		FirstPlayerID:    userID,
+		FirstPlayerName:  userName,
+		SecondPlayerID:   opponent,
+		SecondPlayerName: opponentName,
+		Turn:             true,
+	}
+
+	initPlayerPieces((*shogi)[channel.ID])
+	_, err = s.ChannelMessageSend(channel.ID, "棋子初始化成功，正在初始化盤面狀態")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	initBoard((*shogi)[channel.ID])
+	_, err = s.ChannelMessageSend(channel.ID, "盤面狀態初始化成功")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	var buf bytes.Buffer
+	buf.WriteString("```")
+	for i := range 10 {
+		for j := 10 - 1; j >= 0; j-- {
+			buf.WriteString((*shogi)[channel.ID].Board[j][i])
+		}
+		buf.WriteString("\n")
+	}
+	buf.WriteString("```")
+
+	_, err = s.ChannelMessageSend(channel.ID, buf.String())
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+}
 
 // init players pieces
 func initPlayerPieces(match *model.Match) {
