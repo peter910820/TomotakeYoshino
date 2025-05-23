@@ -14,7 +14,8 @@ import (
 )
 
 var (
-	CorrespondMap map[string]string = map[string]string{
+	ShogiMatch    map[string]*model.Match = make(map[string]*model.Match)
+	CorrespondMap map[string]string       = map[string]string{
 		"步": "fuhyou",
 		"桂": "keima",
 	}

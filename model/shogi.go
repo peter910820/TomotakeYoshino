@@ -13,7 +13,7 @@ type Match struct {
 	SecondPlayerPieces  map[string]Position
 	FirstPlayerCapture  []string
 	SecondPlayerCapture []string
-	Turn                bool
+	Turn                bool           // True 為輪到先攻
 	Board               [10][10]string // 詳細描述盤面狀態，每次更新時只需更新移動的棋子的目標跟原位子兩個點就好
 }
 

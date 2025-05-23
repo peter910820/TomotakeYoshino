@@ -17,8 +17,8 @@ func Guild(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	utils.SlashCommandRespond(s, i, "guildID: "+i.GuildID)
 }
 
-func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appId string) {
-	commands, err := s.ApplicationCommands(appId, "")
+func Index(s *discordgo.Session, i *discordgo.InteractionCreate, appID string) {
+	commands, err := s.ApplicationCommands(appID, "")
 	if err != nil {
 		logrus.Error(err)
 		return
