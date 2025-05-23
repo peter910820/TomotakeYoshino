@@ -73,7 +73,7 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 	buf.WriteString("```")
 	for i := range 10 {
 		for j := 10 - 1; j >= 0; j-- {
-			buf.WriteString((*shogi)[channel.ID].Board[i][j])
+			buf.WriteString((*shogi)[channel.ID].Board[j][i])
 		}
 		buf.WriteString("\n")
 	}
@@ -97,29 +97,32 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 
 	// 1.處理棋子座標
 
+	runes := []rune(position)
 	// 先處理沒有輔助字的狀況
 	// 轉換座標資料格式
-	pos, err := translateToPosition(position)
+	pos, err := conversionToPosition(position)
 	if err != nil {
 		logrus.Error(err)
 		utils.SlashCommandError(s, i, err.Error())
 		return
 	}
 
-	piecePos, err := judgeMove(pos, position[2:3], match)
+	fmt.Println(string(runes[2]))
+
+	piecePos, err := judgeMove(pos, string(runes[2]), match)
 	if err != nil {
 		logrus.Error(err)
 		utils.SlashCommandError(s, i, err.Error())
 		return
 	}
 	// 2.處理盤面座標
-	refreshBoard(*pos, piecePos, position[2:3], match)
+	refreshBoard(*pos, piecePos, string(runes[2]), match)
 
 	var buf bytes.Buffer
 	buf.WriteString("```")
 	for i := range 10 {
 		for j := 10 - 1; j >= 0; j-- {
-			buf.WriteString(match.Board[i][j])
+			buf.WriteString(match.Board[j][i])
 		}
 		buf.WriteString("\n")
 	}
@@ -132,8 +135,8 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 	}
 }
 
-// translate command "shogimove" position parameter to model.Position struct
-func translateToPosition(position string) (*model.Position, error) {
+// conversion command "shogimove" position parameter to model.Position struct
+func conversionToPosition(position string) (*model.Position, error) {
 	var pos model.Position
 	var err error
 	pos.X, err = strconv.Atoi(position[:1])
@@ -149,7 +152,7 @@ func translateToPosition(position string) (*model.Position, error) {
 
 // handle move
 func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model.Position, error) {
-	var piecePos model.Position
+	var piecePos model.Position = model.Position{}
 	matchPieces := []string{}
 	if match.Turn {
 		for k, v := range match.FirstPlayerPieces {
@@ -157,6 +160,7 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 			if v == *pos {
 				return piecePos, errors.New("目標位置上有自己的棋子")
 			}
+			logrus.Debugf("%v", CorrespondMap[pieceName])
 			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
 				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
 			}
@@ -175,12 +179,12 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 	// 目前只有先手的狀況 因為邏輯較為複雜所以之後這段會重構 要代碼複用的代碼複用 要省略的省略
 	var finallyMovePiece string = ""
 	for _, v := range matchPieces {
-		judgeFunc := piecesRules(v)
-		if judgeFunc(match.FirstPlayerPieces[v], *pos, match.Turn) {
+		if piecesRules(v, match.FirstPlayerPieces[v], *pos, match.Turn) {
 			if finallyMovePiece != "" {
 				return piecePos, errors.New("模稜兩可的操作")
 			}
 			piecePos = match.FirstPlayerPieces[v]
+			logrus.Debug(piecePos.X, piecePos.Y)
 			finallyMovePiece = v
 		}
 	}
@@ -194,22 +198,22 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 			break
 		}
 	}
-
+	logrus.Debug(piecePos.X, piecePos.Y)
 	return piecePos, nil
 }
 
-func piecesRules(pieceName string) func(model.Position, model.Position, bool) bool {
+func piecesRules(pieceName string, piecePos model.Position, targetPos model.Position, turn bool) bool {
 	switch pieceName {
 	case "fuhyou":
-		return fuhyouRule
+		return fuhyouRule(piecePos, targetPos, turn)
 	case "keima":
-		return keimaRule
+		return keimaRule(piecePos, targetPos, turn)
 	}
-	return keimaRule
+	return keimaRule(piecePos, targetPos, turn)
 }
 
 // refresh match board status
-func refreshBoard(piecePos model.Position, targetPos model.Position, pieceName string, match *model.Match) {
+func refreshBoard(targetPos model.Position, piecePos model.Position, pieceName string, match *model.Match) {
 	match.Board[piecePos.X][piecePos.Y] = "＿"
 	match.Board[targetPos.X][targetPos.Y] = pieceName
 }
