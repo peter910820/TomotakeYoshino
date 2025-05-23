@@ -53,7 +53,7 @@ func RegisterCommand(s *discordgo.Session) {
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "opponent",
+					Name:        "opponentid",
 					Description: "要對弈的對手ID",
 					Required:    true,
 				},
@@ -90,6 +90,18 @@ func RegisterCommand(s *discordgo.Session) {
 					Name:        "support",
 					Description: "選擇輔助提示詞(開發中)",
 					Required:    false,
+				},
+			},
+		},
+		{
+			Name:        "shogidebug",
+			Description: "get the shogi pieces data for test",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "channleid",
+					Description: "input channle id",
+					Required:    true,
 				},
 			},
 		},

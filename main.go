@@ -91,7 +91,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 		go cmds.VndbSearchVn(s, i, value)
 	case "shogistart":
-		value, err := utils.GetOptions(i, "opponent")
+		opponentID, err := utils.GetOptions(i, "opponentid")
 		if err != nil {
 			logrus.Error(err)
 			return
@@ -109,7 +109,7 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 		// start a shogi match
-		go shogi.ShogiStart(s, i, &shogiMatch, value)
+		go shogi.ShogiStart(s, i, &shogiMatch, opponentID)
 		utils.SlashCommandRespond(s, i, "正在開始創建對局，請稍後")
 	case "shogimove":
 		behavior, err := utils.GetOptions(i, "behavior")
