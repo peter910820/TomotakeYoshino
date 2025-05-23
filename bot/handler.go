@@ -87,19 +87,23 @@ func OnInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		behavior, err := utils.GetOptions(i, "behavior")
 		if err != nil {
 			logrus.Error(err)
+			utils.SlashCommandError(s, i, err.Error())
 			return
 		}
 		position, err := utils.GetOptions(i, "position")
 		if err != nil {
 			logrus.Error(err)
+			utils.SlashCommandError(s, i, err.Error())
 			return
 		}
 		// check if channel has other match
 		channel, err := s.Channel(i.ChannelID)
 		if err != nil {
 			logrus.Error(err)
+			utils.SlashCommandError(s, i, err.Error())
 			return
 		}
+		utils.SlashCommandRespond(s, i, "正在移動棋子")
 		if behavior == "move" {
 			go shogi.ShogiMove(s, i, shogi.ShogiMatch[channel.ID], position)
 		} else {
@@ -109,6 +113,7 @@ func OnInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		channelID, err := utils.GetOptions(i, "channleid")
 		if err != nil {
 			logrus.Error(err)
+			utils.SlashCommandError(s, i, err.Error())
 			return
 		}
 		_, ok := shogi.ShogiMatch[channelID]
@@ -116,6 +121,7 @@ func OnInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			userID, err := utils.GetUserID(i)
 			if err != nil {
 				utils.SlashCommandRespond(s, i, "找不到使用者") // 基本上應該不會發生這種狀況
+				return
 			}
 			// check if is user turn
 			if shogi.ShogiMatch[channelID].Turn {

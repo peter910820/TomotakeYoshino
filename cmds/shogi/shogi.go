@@ -160,7 +160,6 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 			if v == *pos {
 				return piecePos, errors.New("目標位置上有自己的棋子")
 			}
-			logrus.Debugf("%v", CorrespondMap[pieceName])
 			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
 				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
 			}
@@ -184,7 +183,6 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 				return piecePos, errors.New("模稜兩可的操作")
 			}
 			piecePos = match.FirstPlayerPieces[v]
-			logrus.Debug(piecePos.X, piecePos.Y)
 			finallyMovePiece = v
 		}
 	}
@@ -198,18 +196,18 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 			break
 		}
 	}
-	logrus.Debug(piecePos.X, piecePos.Y)
 	return piecePos, nil
 }
 
 func piecesRules(pieceName string, piecePos model.Position, targetPos model.Position, turn bool) bool {
-	switch pieceName {
-	case "fuhyou":
+	switch {
+	case strings.HasPrefix(pieceName, "fuhyou"):
 		return fuhyouRule(piecePos, targetPos, turn)
-	case "keima":
+	case strings.HasPrefix(pieceName, "keima"):
 		return keimaRule(piecePos, targetPos, turn)
+	default:
+		return false
 	}
-	return keimaRule(piecePos, targetPos, turn)
 }
 
 // refresh match board status
