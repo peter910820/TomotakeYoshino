@@ -139,7 +139,12 @@ func onInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			logrus.Error(err)
 			return
 		}
-		shogi.GetShogiPiecesData(s, i, shogiMatch[channelID])
+		_, ok := shogiMatch[channelID]
+		if ok {
+			go shogi.GetShogiPiecesData(s, i, shogiMatch[channelID])
+		} else {
+			utils.SlashCommandRespond(s, i, "該隊局不存在")
+		}
 		// value, err := utils.GetOptions(i, "support")
 		// if err != nil {
 		// 	logrus.Error(err)

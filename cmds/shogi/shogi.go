@@ -48,7 +48,7 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 		FirstPlayerName:  userName,
 		SecondPlayerID:   opponent,
 		SecondPlayerName: opponentName,
-		Turn:             false,
+		Turn:             true,
 	}
 
 	InitPlayerPieces((*shogi)[channel.ID])
@@ -280,13 +280,13 @@ func refreshBoard(piecePos model.Position, targetPos model.Position, pieceName s
 func GetShogiPiecesData(s *discordgo.Session, i *discordgo.InteractionCreate, match *model.Match) {
 	var buf bytes.Buffer
 	buf.WriteString("```")
-	buf.WriteString("First Player Pieces:")
+	buf.WriteString("First Player Pieces:\n")
 	for k, v := range match.FirstPlayerPieces {
-		buf.WriteString(fmt.Sprintf("%s: {%d %d}", k, v.X, v.Y))
+		buf.WriteString(fmt.Sprintf("  %s: {%d %d}\n", k, v.X, v.Y))
 	}
-	buf.WriteString("Second Player Pieces:")
+	buf.WriteString("Second Player Pieces:\n")
 	for k, v := range match.SecondPlayerPieces {
-		buf.WriteString(fmt.Sprintf("%s: {%d %d}", k, v.X, v.Y))
+		buf.WriteString(fmt.Sprintf("  %s: {%d %d}\n", k, v.X, v.Y))
 	}
 	buf.WriteString("```")
 
