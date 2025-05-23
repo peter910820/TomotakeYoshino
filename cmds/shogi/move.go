@@ -2,10 +2,8 @@ package shogi
 
 import (
 	"TomotakeYoshino/model"
-	"TomotakeYoshino/utils"
 	"bytes"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -35,23 +33,31 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 	runes := []rune(position)
 	// 先處理沒有輔助字的狀況
 	// 轉換座標資料格式
-	pos, err := conversionToPosition(position)
+	pos, err := conversionToPosition(runes)
 	if err != nil {
 		logrus.Error(err)
-		utils.SlashCommandError(s, i, err.Error())
+		_, err = s.ChannelMessageSend(match.ChannleID, err.Error())
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
 		return
 	}
-
-	fmt.Println(string(runes[2]))
 
 	piecePos, err := judgeMove(pos, string(runes[2]), match)
 	if err != nil {
 		logrus.Error(err)
-		utils.SlashCommandError(s, i, err.Error())
+		_, err = s.ChannelMessageSend(match.ChannleID, err.Error())
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
 		return
 	}
 	// 2.處理盤面座標
 	refreshBoard(*pos, piecePos, string(runes[2]), match)
+	// switch turn
+	match.Turn = !match.Turn
 
 	var buf bytes.Buffer
 	buf.WriteString("```")
@@ -66,19 +72,24 @@ func ShogiMove(s *discordgo.Session, i *discordgo.InteractionCreate, match *mode
 	_, err = s.ChannelMessageSend(match.ChannleID, buf.String())
 	if err != nil {
 		logrus.Error(err)
+		_, err = s.ChannelMessageSend(match.ChannleID, err.Error())
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
 		return
 	}
 }
 
 // conversion command "shogimove" position parameter to model.Position struct
-func conversionToPosition(position string) (*model.Position, error) {
+func conversionToPosition(position []rune) (*model.Position, error) {
 	var pos model.Position
 	var err error
-	pos.X, err = strconv.Atoi(position[:1])
+	pos.X, err = strconv.Atoi(string(position[0]))
 	if err != nil {
 		return &pos, err
 	}
-	pos.Y, err = strconv.Atoi(position[1:2])
+	pos.Y, err = strconv.Atoi(string(position[1]))
 	if err != nil {
 		return &pos, err
 	}
@@ -88,47 +99,52 @@ func conversionToPosition(position string) (*model.Position, error) {
 // handle move
 func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model.Position, error) {
 	var piecePos model.Position = model.Position{}
+	var playerPieces map[string]model.Position
 	matchPieces := []string{}
+
 	if match.Turn {
-		for k, v := range match.FirstPlayerPieces {
-			// 排除目標位置有自己的棋子的狀況
-			if v == *pos {
-				return piecePos, errors.New("目標位置上有自己的棋子")
-			}
-			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
-				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
-			}
-		}
+		playerPieces = match.FirstPlayerPieces
 	} else {
-		for k, v := range match.SecondPlayerPieces {
-			// 排除目標位置有自己的棋子的狀況
-			if v == *pos {
-				return piecePos, errors.New("目標位置上有自己的棋子")
-			}
-			if strings.HasPrefix(k, CorrespondMap[pieceName]) {
-				matchPieces = append(matchPieces, k) // 將匹配到的鍵本身傳入切片中
-			}
+		playerPieces = match.SecondPlayerPieces
+	}
+	for k, v := range playerPieces {
+		// exclude the situation where the target position has its own chess piece
+		if v == *pos {
+			return piecePos, errors.New("目標位置上有自己的棋子")
+		}
+		if strings.HasPrefix(k, CorrespondMap[pieceName]) {
+			matchPieces = append(matchPieces, k) // pass the matched key itself into the slice
 		}
 	}
-	// 目前只有先手的狀況 因為邏輯較為複雜所以之後這段會重構 要代碼複用的代碼複用 要省略的省略
+
 	var finallyMovePiece string = ""
 	for _, v := range matchPieces {
-		if piecesRules(v, match.FirstPlayerPieces[v], *pos, match.Turn) {
+		if piecesRules(v, playerPieces[v], *pos, match.Turn) {
 			if finallyMovePiece != "" {
 				return piecePos, errors.New("模稜兩可的操作")
 			}
-			piecePos = match.FirstPlayerPieces[v]
+			piecePos = playerPieces[v]
 			finallyMovePiece = v
 		}
 	}
-	match.FirstPlayerPieces[finallyMovePiece] = *pos
-
-	// 這邊還要去撈目標位置是否有敵方棋子，有的話刪除他並加到自己的capture陣列中
-	for k, v := range match.SecondPlayerPieces {
-		if v == *pos {
-			match.FirstPlayerCapture = append(match.FirstPlayerCapture, k)
-			delete(match.SecondPlayerPieces, k)
-			break
+	// eat pieces
+	if match.Turn {
+		match.FirstPlayerPieces[finallyMovePiece] = *pos
+		for k, v := range match.SecondPlayerPieces {
+			if v == *pos {
+				match.FirstPlayerCapture = append(match.FirstPlayerCapture, k)
+				delete(match.SecondPlayerPieces, k)
+				break
+			}
+		}
+	} else {
+		match.SecondPlayerPieces[finallyMovePiece] = *pos
+		for k, v := range match.FirstPlayerPieces {
+			if v == *pos {
+				match.FirstPlayerCapture = append(match.SecondPlayerCapture, k)
+				delete(match.FirstPlayerPieces, k)
+				break
+			}
 		}
 	}
 	return piecePos, nil
@@ -150,5 +166,3 @@ func refreshBoard(targetPos model.Position, piecePos model.Position, pieceName s
 	match.Board[piecePos.X][piecePos.Y] = "＿"
 	match.Board[targetPos.X][targetPos.Y] = pieceName
 }
-
-// 以後只會傳match的指標，將選擇match的判斷留給進goruntine之前

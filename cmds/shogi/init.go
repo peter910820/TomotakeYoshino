@@ -13,12 +13,6 @@ import (
 
 // start a shogi match
 func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map[string]*model.Match, opponent string) {
-	channel, err := s.Channel(i.ChannelID)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
 	userID, err := utils.GetUserID(i)
 	if err != nil {
 		logrus.Error(err)
@@ -36,8 +30,8 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 		return
 	}
 
-	(*shogi)[channel.ID] = &model.Match{
-		ChannleID:        channel.ID,
+	(*shogi)[i.ChannelID] = &model.Match{
+		ChannleID:        i.ChannelID,
 		FirstPlayerID:    userID,
 		FirstPlayerName:  userName,
 		SecondPlayerID:   opponent,
@@ -45,15 +39,15 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 		Turn:             true,
 	}
 
-	initPlayerPieces((*shogi)[channel.ID])
-	_, err = s.ChannelMessageSend(channel.ID, "棋子初始化成功，正在初始化盤面狀態")
+	initPlayerPieces((*shogi)[i.ChannelID])
+	_, err = s.ChannelMessageSend(i.ChannelID, "棋子初始化成功，正在初始化盤面狀態")
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
 
-	initBoard((*shogi)[channel.ID])
-	_, err = s.ChannelMessageSend(channel.ID, "盤面狀態初始化成功")
+	initBoard((*shogi)[i.ChannelID])
+	_, err = s.ChannelMessageSend(i.ChannelID, "盤面狀態初始化成功")
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -61,15 +55,15 @@ func ShogiStart(s *discordgo.Session, i *discordgo.InteractionCreate, shogi *map
 
 	var buf bytes.Buffer
 	buf.WriteString("```")
-	for i := range 10 {
-		for j := 10 - 1; j >= 0; j-- {
-			buf.WriteString((*shogi)[channel.ID].Board[j][i])
+	for j := range 10 {
+		for k := 10 - 1; k >= 0; k-- {
+			buf.WriteString((*shogi)[i.ChannelID].Board[k][j])
 		}
 		buf.WriteString("\n")
 	}
 	buf.WriteString("```")
 
-	_, err = s.ChannelMessageSend(channel.ID, buf.String())
+	_, err = s.ChannelMessageSend(i.ChannelID, buf.String())
 	if err != nil {
 		logrus.Error(err)
 		return

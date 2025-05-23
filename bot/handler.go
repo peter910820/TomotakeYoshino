@@ -84,6 +84,7 @@ func OnInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		go shogi.ShogiStart(s, i, &shogi.ShogiMatch, opponentID)
 		utils.SlashCommandRespond(s, i, "正在開始創建對局，請稍後")
 	case "shogimove":
+		// get parameter
 		behavior, err := utils.GetOptions(i, "behavior")
 		if err != nil {
 			logrus.Error(err)
@@ -96,18 +97,33 @@ func OnInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			utils.SlashCommandError(s, i, err.Error())
 			return
 		}
-		// check if channel has other match
-		channel, err := s.Channel(i.ChannelID)
-		if err != nil {
-			logrus.Error(err)
-			utils.SlashCommandError(s, i, err.Error())
-			return
-		}
-		utils.SlashCommandRespond(s, i, "正在移動棋子")
-		if behavior == "move" {
-			go shogi.ShogiMove(s, i, shogi.ShogiMatch[channel.ID], position)
-		} else {
+		_, ok := shogi.ShogiMatch[i.ChannelID]
+		if ok {
+			// check whos turn
+			userID, err := utils.GetUserID(i)
+			if err != nil {
+				utils.SlashCommandRespond(s, i, "找不到使用者") // 基本上應該不會發生這種狀況
+				return
+			}
+			if shogi.ShogiMatch[i.ChannelID].Turn {
+				if shogi.ShogiMatch[i.ChannelID].FirstPlayerID != userID {
+					utils.SlashCommandRespond(s, i, "現在不是你的回合")
+					return
+				}
+			} else {
+				if shogi.ShogiMatch[i.ChannelID].SecondPlayerID != userID {
+					utils.SlashCommandRespond(s, i, "現在不是你的回合")
+					return
+				}
+			}
+			utils.SlashCommandRespond(s, i, "正在移動棋子")
+			if behavior == "move" {
+				go shogi.ShogiMove(s, i, shogi.ShogiMatch[i.ChannelID], position)
+			} else {
 
+			}
+		} else {
+			utils.SlashCommandRespond(s, i, "此頻道沒有對局")
 		}
 	case "shogidebug":
 		channelID, err := utils.GetOptions(i, "channleid")
@@ -118,23 +134,6 @@ func OnInteraction(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 		_, ok := shogi.ShogiMatch[channelID]
 		if ok {
-			userID, err := utils.GetUserID(i)
-			if err != nil {
-				utils.SlashCommandRespond(s, i, "找不到使用者") // 基本上應該不會發生這種狀況
-				return
-			}
-			// check if is user turn
-			if shogi.ShogiMatch[channelID].Turn {
-				if shogi.ShogiMatch[channelID].FirstPlayerID != userID {
-					utils.SlashCommandRespond(s, i, "現在不是你的回合")
-					return
-				}
-			} else {
-				if shogi.ShogiMatch[channelID].SecondPlayerID != userID {
-					utils.SlashCommandRespond(s, i, "現在不是你的回合")
-					return
-				}
-			}
 			go shogi.GetShogiPiecesData(s, i, shogi.ShogiMatch[channelID])
 		} else {
 			utils.SlashCommandRespond(s, i, "該對局不存在")
