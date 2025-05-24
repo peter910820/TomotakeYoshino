@@ -120,7 +120,7 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 
 	var finallyMovePiece string = ""
 	for _, v := range matchPieces {
-		if piecesRules(v, playerPieces[v], *pos, match.Turn, match) {
+		if piecesRules(v, playerPieces[v], *pos, match) {
 			if finallyMovePiece != "" {
 				return piecePos, errors.New("模稜兩可的操作")
 			}
@@ -155,12 +155,12 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 	return piecePos, nil
 }
 
-func piecesRules(pieceName string, piecePos model.Position, targetPos model.Position, turn bool, match *model.Match) bool {
+func piecesRules(pieceName string, piecePos model.Position, targetPos model.Position, match *model.Match) bool {
 	switch {
 	case strings.HasPrefix(pieceName, "fuhyou"):
-		return fuhyouRule(piecePos, targetPos, turn)
+		return fuhyouRule(piecePos, targetPos, match.Turn)
 	case strings.HasPrefix(pieceName, "keima"):
-		return keimaRule(piecePos, targetPos, turn)
+		return keimaRule(piecePos, targetPos, match.Turn)
 	case strings.HasPrefix(pieceName, "kyousha"):
 		return kyoushaRule(piecePos, targetPos, match)
 	default:
