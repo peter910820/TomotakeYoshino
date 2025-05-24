@@ -16,6 +16,7 @@ var (
 	CorrespondMap map[string]string       = map[string]string{
 		"步": "fuhyou",
 		"桂": "keima",
+		"香": "kyousha",
 	}
 )
 
@@ -119,13 +120,17 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 
 	var finallyMovePiece string = ""
 	for _, v := range matchPieces {
-		if piecesRules(v, playerPieces[v], *pos, match.Turn) {
+		if piecesRules(v, playerPieces[v], *pos, match.Turn, match) {
 			if finallyMovePiece != "" {
 				return piecePos, errors.New("模稜兩可的操作")
 			}
 			piecePos = playerPieces[v]
 			finallyMovePiece = v
 		}
+	}
+	// all pieces are not match
+	if finallyMovePiece == "" {
+		return piecePos, errors.New("沒有可到該位置的棋子")
 	}
 	// eat pieces
 	if match.Turn {
@@ -150,12 +155,14 @@ func judgeMove(pos *model.Position, pieceName string, match *model.Match) (model
 	return piecePos, nil
 }
 
-func piecesRules(pieceName string, piecePos model.Position, targetPos model.Position, turn bool) bool {
+func piecesRules(pieceName string, piecePos model.Position, targetPos model.Position, turn bool, match *model.Match) bool {
 	switch {
 	case strings.HasPrefix(pieceName, "fuhyou"):
 		return fuhyouRule(piecePos, targetPos, turn)
 	case strings.HasPrefix(pieceName, "keima"):
 		return keimaRule(piecePos, targetPos, turn)
+	case strings.HasPrefix(pieceName, "kyousha"):
+		return kyoushaRule(piecePos, targetPos, match)
 	default:
 		return false
 	}
