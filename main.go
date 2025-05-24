@@ -29,7 +29,7 @@ func main() {
 	// add handler
 	yoshinoBot.AddHandler(bot.Ready)
 	yoshinoBot.AddHandler(bot.GuildMemberAdd)
-	yoshinoBot.AddHandler(bot.OnInteraction)
+	yoshinoBot.AddHandler(bot.OnInteractions)
 
 	err = yoshinoBot.Open() // websocket connect
 	if err != nil {
