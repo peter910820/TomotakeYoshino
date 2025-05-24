@@ -15,8 +15,16 @@ var (
 	ShogiMatch    map[string]*model.Match = make(map[string]*model.Match)
 	CorrespondMap map[string]string       = map[string]string{
 		"步": "fuhyou",
-		"桂": "keima",
 		"香": "kyousha",
+		"桂": "keima",
+		"銀": "keima",
+		"金": "keima",
+		"王": "oushou",
+		"玉": "gyokushou",
+		"角": "kakugyou",
+		"飛": "hisha",
+		"龍": "ryuuou",
+		"馬": "ryuuma",
 	}
 )
 
@@ -159,10 +167,24 @@ func piecesRules(pieceName string, piecePos model.Position, targetPos model.Posi
 	switch {
 	case strings.HasPrefix(pieceName, "fuhyou"):
 		return fuhyouRule(piecePos, targetPos, match.Turn)
-	case strings.HasPrefix(pieceName, "keima"):
-		return keimaRule(piecePos, targetPos, match.Turn)
 	case strings.HasPrefix(pieceName, "kyousha"):
 		return kyoushaRule(piecePos, targetPos, match)
+	case strings.HasPrefix(pieceName, "keima"):
+		return keimaRule(piecePos, targetPos, match.Turn)
+	case strings.HasPrefix(pieceName, "ginshou"):
+		return false
+	case strings.HasPrefix(pieceName, "kinshou"):
+		return false
+	case strings.HasPrefix(pieceName, "oushou") || strings.HasPrefix(pieceName, "gyokushou"):
+		return false
+	case strings.HasPrefix(pieceName, "kakugyou"):
+		return false
+	case strings.HasPrefix(pieceName, "hisha"):
+		return false
+	case strings.HasPrefix(pieceName, "ryuuou"):
+		return false
+	case strings.HasPrefix(pieceName, "ryuuma"):
+		return false
 	default:
 		return false
 	}
